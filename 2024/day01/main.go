@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"slices"
-	"strconv"
 	"strings"
 )
 
@@ -25,13 +24,10 @@ func splitFile()([]int, []int) {
 	var arr2 []int;
 	lines := strings.Split(inputFile, "\n")
 	for _, line := range lines{
-		positions := strings.Split(line, "   ");
-		if(len(positions) == 2){
-			pos1, _ := strconv.Atoi(positions[0]);
-			pos2, _ := strconv.Atoi(positions[1]);
-			arr1 = append(arr1, pos1);
-			arr2 = append(arr2, pos2);
-		}
+			var n1, n2 int
+			fmt.Sscanf(line, "%d   %d", &n1, &n2)
+			arr1 = append(arr1, n1);
+			arr2 = append(arr2, n2);
 	}
 
 	return arr1, arr2;
