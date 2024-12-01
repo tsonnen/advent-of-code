@@ -9,58 +9,52 @@ import (
 )
 
 //go:embed input.txt
-var inputFile string;
+var inputFile string
 
-func main(){
-	histPos1, histPos2:= splitFile();
-	
-	totalDistance, similarityScore := calcTotalDistance(histPos1, histPos2);
-	fmt.Printf("Total distance: %v\n", totalDistance);
-	fmt.Printf("Similarity score: %v\n", similarityScore);
+func main() {
+	histPos1, histPos2 := splitFile()
+	secondLocationsMap := generateLocationMap(histPos2)
+
+	totalDistance, similarityScore := calcDistanceAndSimilarity(histPos1, histPos2, secondLocationsMap)
+	fmt.Printf("Total distance: %v\n", totalDistance)
+	fmt.Printf("Similarity score: %v\n", similarityScore)
 }
 
-func splitFile()([]int, []int) {
-	var arr1 []int;
-	var arr2 []int;
+func splitFile() ([]int, []int) {
+	var arr1 []int
+	var arr2 []int
 	lines := strings.Split(inputFile, "\n")
-	for _, line := range lines{
-			var n1, n2 int
-			fmt.Sscanf(line, "%d   %d", &n1, &n2)
-			arr1 = append(arr1, n1);
-			arr2 = append(arr2, n2);
+	for _, line := range lines {
+		var n1, n2 int
+		fmt.Sscanf(line, "%d   %d", &n1, &n2)
+		arr1 = append(arr1, n1)
+		arr2 = append(arr2, n2)
 	}
 
-	return arr1, arr2;
+	return arr1, arr2
 }
 
-func calcTotalDistance(histPos1 []int, histPos2 []int) (int, int){
-	totalDistance := 0;
-	similarityScore := 0;
+func generateLocationMap(locationArray []int) map[int]int {
+	locationMap := make(map[int]int)
 
-	if(!slices.IsSorted(histPos1)){
-		slices.Sort(histPos1);
+	for _, location := range locationArray {
+		locationMap[location]++
 	}
 
-	if(!slices.IsSorted((histPos2))){
-		slices.Sort(histPos2);
+	return locationMap
+}
+
+func calcDistanceAndSimilarity(histPos1 []int, histPos2 []int, secondLocationsMap map[int]int) (int, int) {
+	totalDistance := 0
+	similarityScore := 0
+
+	slices.Sort(histPos1)
+	slices.Sort(histPos2)
+
+	for i := 0; i < len(histPos1); i++ {
+		totalDistance += int(math.Abs(float64(histPos1[i] - histPos2[i])))
+		similarityScore += secondLocationsMap[histPos1[i]] * histPos1[i]
 	}
 
-	for i :=0; i< len(histPos1); i++{
-		totalDistance += int(math.Abs(float64(histPos1[i] - histPos2[i])));
-		n, found := slices.BinarySearch(histPos2, histPos1[i]);
-		if found{
-			count := 1;
-			for j:= n + 1; j < len(histPos2); j++{
-				if(histPos2[j] != histPos2[n]){
-					break;
-				}
-
-				count++;
-			}
-
-			similarityScore += histPos1[i] * count;
-		}
-	}
-
-	return totalDistance, similarityScore;
+	return totalDistance, similarityScore
 }
