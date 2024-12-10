@@ -13,9 +13,10 @@ var inputFile string
 
 func main() {
 	hikingMap, trailHeads := createHikingMap(inputFile)
-	totalScore := findHikingScores(hikingMap, trailHeads)
+	totalScore, totalRating := findHikingScoresAndRatings(hikingMap, trailHeads)
 
 	fmt.Printf("Total Score is %d\n", totalScore)
+	fmt.Printf("Total Rating is %d\n", totalRating)
 
 }
 
@@ -38,20 +39,23 @@ func createHikingMap(input string) (map[image.Point]int, []image.Point) {
 	return hikingMap, trailHeads
 }
 
-func findHikingScores(hikingMap map[image.Point]int, trailHeads []image.Point) int {
+func findHikingScoresAndRatings(hikingMap map[image.Point]int, trailHeads []image.Point) (int, int) {
 	totalScores := 0
+	totalRatings := 0
 	for _, trailHead := range trailHeads {
-		score := len(findHikingEndpoints(trailHead, hikingMap))
-		totalScores += score
+		endpoints, rating := findHikingEndpoints(trailHead, hikingMap)
+		totalScores += len(endpoints)
+		totalRatings += rating
 	}
 
-	return totalScores
+	return totalScores, totalRatings
 }
 
-func findHikingEndpoints(curPos image.Point, hikingMap map[image.Point]int) map[image.Point]int {
+func findHikingEndpoints(curPos image.Point, hikingMap map[image.Point]int) (map[image.Point]int, int) {
 	curElevation := hikingMap[curPos]
 	endpoints := make(map[image.Point]int)
 	possibleNextSteps := []image.Point{curPos.Sub(image.Point{1, 0}), curPos.Add(image.Point{1, 0}), curPos.Sub(image.Point{0, 1}), curPos.Add(image.Point{0, 1})}
+	rating := 0
 
 	for _, nextStep := range possibleNextSteps {
 		elevation, ok := hikingMap[nextStep]
@@ -66,16 +70,18 @@ func findHikingEndpoints(curPos image.Point, hikingMap map[image.Point]int) map[
 
 		if elevation == 9 {
 			endpoints[nextStep] = 1
+			rating++
 			continue
 		}
 
-		childEndpoints := findHikingEndpoints(nextStep, hikingMap)
+		childEndpoints, childRating := findHikingEndpoints(nextStep, hikingMap)
+		rating += childRating
 
 		for pos := range childEndpoints {
 			endpoints[pos] = 1
 		}
 	}
-	return endpoints
+	return endpoints, rating
 }
 
 func atoi(numString string) int {
