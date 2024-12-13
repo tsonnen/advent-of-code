@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"image"
 	"regexp"
 	"strconv"
@@ -12,7 +13,13 @@ import (
 var inputFile string
 
 func main() {
-	parseInput(inputFile)
+	clawMachines := parseInput(inputFile)
+	tokenTotal := calculateButtonPresses(clawMachines, false)
+	tokenTotal2 := calculateButtonPresses(clawMachines, true)
+
+	fmt.Printf("Total token cost %d\n", tokenTotal)
+	fmt.Printf("Total token cost pt2 %d\n", tokenTotal2)
+
 }
 
 type ClawMachine struct {
@@ -44,6 +51,29 @@ func parseInput(input string) []ClawMachine {
 	}
 
 	return clawMachines
+}
+
+func calculateButtonPresses(clawMachines []ClawMachine, isPart2 bool) int {
+	total := 0
+
+	for _, clawMachine := range clawMachines {
+		prizeLoc := clawMachine.prizeLoc
+
+		if isPart2 {
+			prizeLoc = prizeLoc.Add(image.Point{10000000000000, 10000000000000})
+		}
+		aPresses :=
+			(clawMachine.buttonB.Y*prizeLoc.X - clawMachine.buttonB.X*prizeLoc.Y) /
+				(clawMachine.buttonA.X*clawMachine.buttonB.Y - clawMachine.buttonA.Y*clawMachine.buttonB.X)
+		bPresses :=
+			(clawMachine.buttonA.Y*prizeLoc.X - clawMachine.buttonA.X*prizeLoc.Y) /
+				(clawMachine.buttonA.Y*clawMachine.buttonB.X - clawMachine.buttonA.X*clawMachine.buttonB.Y)
+		if clawMachine.buttonA.Mul(aPresses).Add(clawMachine.buttonB.Mul(bPresses)) == prizeLoc {
+			total += aPresses*3 + bPresses
+		}
+	}
+
+	return total
 }
 
 func atoi(numString string) int {
