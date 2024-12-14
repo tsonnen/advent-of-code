@@ -15,9 +15,13 @@ func main() {
 	var width = 101
 
 	robots := parseInput(inputFile)
-	safetyFactor := moveRobotsAndCalcSafetyFactor(robots, height, width)
+	// safetyFactor := moveRobotsAndCalcSafetyFactor(robots, height, width)
 
-	fmt.Printf("The safety factor is %d", safetyFactor)
+	// fmt.Printf("The safety factor is %d\n", safetyFactor)
+
+	easterEgg := moveRobots(robots, height, width, true)
+
+	fmt.Printf("The easter egg happens at %d seconds\n", easterEgg)
 }
 
 type SecurityRobot struct {
@@ -28,11 +32,43 @@ type SecurityRobot struct {
 var numSeconds = 100
 
 func moveRobotsAndCalcSafetyFactor(robots []SecurityRobot, height int, width int) int {
-	moveRobots(robots, height, width)
+	moveRobots(robots, height, width, false)
 	return calculateSafetyFactor(robots, height, width)
 }
 
-func moveRobots(robots []SecurityRobot, height int, width int) {
+func checkRobotsEasterEgg(robots []SecurityRobot, height int, width int) bool {
+	var image [][]string
+	for y := 0; y < height; y++ {
+		var row []string
+		for x := 0; x < width; x++ {
+			row = append(row, ".")
+		}
+		image = append(image, row)
+	}
+	for _, robot := range robots {
+		image[robot.pos.Y][robot.pos.X] = "#"
+	}
+
+	robCount := 0
+	for y := 0; y < height; y++ {
+		robCount = 0
+		for x := 0; x < width; x++ {
+			if image[y][x] == "#" {
+				robCount++
+			}
+			if robCount > 10 {
+				return true
+			}
+			if image[y][x] == "." {
+				robCount = 0
+			}
+		}
+	}
+
+	return false
+}
+
+func moveRobots(robots []SecurityRobot, height int, width int, checkEasterEgg bool) int {
 	for i := 0; i < numSeconds; i++ {
 		for rI := range robots {
 			robot := &robots[rI]
@@ -50,7 +86,15 @@ func moveRobots(robots []SecurityRobot, height int, width int) {
 				robot.pos.Y = robot.pos.Y - height
 			}
 		}
+
+		if checkEasterEgg && checkRobotsEasterEgg(robots, height, width) {
+			return i + 1
+		} else if checkEasterEgg {
+			numSeconds++
+		}
 	}
+
+	return -1
 }
 
 func calculateSafetyFactor(robots []SecurityRobot, height int, width int) int {
