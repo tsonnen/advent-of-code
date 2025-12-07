@@ -7,26 +7,26 @@ use std::{
 
 use regex::Regex;
 
+fn modulo(x: i32, y: i32) -> i32 {
+    let r = x % y;
+    if r < 0 {
+        r + y
+    } else {
+        r
+    }
+}
+
 fn read_input_file() -> io::Result<Vec<String>> {
     BufReader::new(File::open("input.txt")?).lines().collect()
 }
 
-fn modulo(x: i32, y: i32) -> i32 {
-   let r = x % y;
-   if r < 0 {
-      r + y
-   } else {
-      r
-   }
-}
+fn main() {
+    let lines = read_input_file().expect("Failed to read input file");
+    let times_at_zero = count_times_at_zero(&lines);
+    let times_past_zero = count_times_past_zero(&lines);
 
-fn main(){
-   let lines = read_input_file().expect("Failed to read input file");
-   let times_at_zero = count_times_at_zero(&lines);
-   let times_past_zero = count_times_past_zero(&lines);
-
-   println!("Times at zero: {}", times_at_zero);
-   println!("Times past zero: {}", times_past_zero);
+    println!("Times at zero: {}", times_at_zero);
+    println!("Times past zero: {}", times_past_zero);
 }
 
 fn count_times_at_zero(lines: &Vec<String>) -> i32 {
@@ -44,7 +44,7 @@ fn count_times_at_zero(lines: &Vec<String>) -> i32 {
         }
 
         current_value = current_value % 100;
-        if current_value == 0 {
+        if current_value % 100 == 0 {
             times_at_zero += 1;
         }
     }
@@ -65,17 +65,19 @@ fn count_times_past_zero(lines: &Vec<String>) -> i32 {
         match &captures[1] {
             "L" => {
                 current_value += spaces_turned;
-            },
+            }
             "R" => {
                 current_value -= spaces_turned;
-            },
+            }
             _ => panic!("Unexpected direction"),
         }
 
-        times_past_zero += current_value.abs() / 100 + if previous_value != 0 && current_value <= 0 { 1 } else { 0 };
+        if previous_value != 0 && current_value <= 0 {
+            times_past_zero += 1;
+        }
 
+        times_past_zero += current_value.abs() / 100;
         current_value = modulo(current_value, 100);
-
     }
     times_past_zero
 }
