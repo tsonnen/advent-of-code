@@ -1,0 +1,5 @@
+[workspace]
+members = [
+   "templates/rust",
+   "2025/*/rust",
+]
